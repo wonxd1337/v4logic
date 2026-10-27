@@ -123,14 +123,10 @@ class MovableTypeMassScanner:
         
         for idx, ip in enumerate(valid_ips[:Config.SAMPLE_SIZE], 1):
             sampled_ips.append(ip)
-            if self.cache_manager.is_ip_processed(ip):
-                print(f"  [{idx:2d}] {ip} → [CACHED]")
-                domain_counts[ip] = -1
-                continue
             
             print(f"  [{idx:2d}] {ip} → memeriksa reverse IP...", end=" ", flush=True)
-            domains_tnt = self.scanner.reverse_ip_tntcode(ip)
-            domains_ht = self.scanner.reverse_ip_hackertarget(ip)
+            domains_tnt, status_tnt = self.scanner.reverse_ip_tntcode(ip)
+            domains_ht, status_ht = self.scanner.reverse_ip_hackertarget(ip)
             
             all_domains = set(domains_tnt + domains_ht)
             count = len(all_domains)
