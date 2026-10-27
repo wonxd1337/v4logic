@@ -301,9 +301,11 @@ class MovableTypeMassScanner:
                     if not self.running:
                         break
                     
+                    # Simpan progress checkpoint
                     self.cache_manager.save_base_progress(base_input, current_octet)
                     
-                    if ip and not self.cache_manager.is_ip_processed(ip):
+                    # Langsung proses IP tanpa memanggil is_ip_processed
+                    if ip:
                         self.scanner.process_ip(ip)
                         valid_found += 1
                 
@@ -319,23 +321,19 @@ class MovableTypeMassScanner:
                 for ip in self.ip_generator.generate_ips_level2_explore(base_two_octets, Config.MAX_VALID_RNG):
                     if not self.running:
                         break
-                    if self.cache_manager.is_ip_processed(ip):
-                        if self.skip_counter >= 500:
-                            print("\n[!] Skip counter mencapai 500. Me-reset pencarian explore...")
-                            self.skip_counter = 0
-                            break
-                    else:
-                        found_new = True
-                        self.scanner.process_ip(ip)
-                        
-                        parts = ip.split('.')
-                        if len(parts) == 4:
-                            new_base = '.'.join(parts[:3]) + '.'
-                            print(f"\n[✓] Base baru ditemukan: {new_base}. Berpindah ke Sampling...")
-                            self.scan_phase = 'sampling'
-                            self.current_base_three_octets = new_base
-                            self.skip_counter = 0
-                            break
+                    
+                    # Pada mode explore (random), langsung proses IP valid yang ditemukan
+                    found_new = True
+                    self.scanner.process_ip(ip)
+                    
+                    parts = ip.split('.')
+                    if len(parts) == 4:
+                        new_base = '.'.join(parts[:3]) + '.'
+                        print(f"\n[✓] Base baru ditemukan: {new_base}. Berpindah ke Sampling...")
+                        self.scan_phase = 'sampling'
+                        self.current_base_three_octets = new_base
+                        self.skip_counter = 0
+                        break
                 
                 if not found_new and self.running and self.scan_phase == 'explore':
                     time.sleep(3)
